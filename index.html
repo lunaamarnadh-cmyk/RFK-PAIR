@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乂𝐑𝐅𝐊 𝐁𝐎𝐓乂 | Pairing Code</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body {
+            background: #07090e;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .card {
+            background: #0d111a;
+            border: 1px solid #00f2fe;
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.25);
+            border-radius: 16px;
+            padding: 30px 24px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h1 { font-size: 24px; color: #00f2fe; letter-spacing: 1px; margin-bottom: 6px; }
+        p.sub { font-size: 13px; color: #ff2a5f; font-weight: 600; margin-bottom: 22px; }
+        input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid #1f293d;
+            background: #07090e;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+            margin-bottom: 15px;
+        }
+        input:focus { border-color: #00f2fe; }
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #00f2fe, #ff2a5f);
+            color: #000;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .result-box {
+            margin-top: 22px;
+            padding: 15px;
+            background: #07090e;
+            border: 1px dashed #00f2fe;
+            border-radius: 10px;
+            display: none;
+        }
+        .code {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            color: #00f2fe;
+            margin: 10px 0;
+        }
+        .copy-btn {
+            background: #1a2234;
+            color: #00f2fe;
+            border: 1px solid #00f2fe;
+            padding: 8px 16px;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+        .footer { margin-top: 20px; font-size: 12px; color: #7b879e; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>乂𝐑𝐅𝐊 𝐁𝐎𝐓乂</h1>
+        <p class="sub">RFK MODS • PAIRING SESSION GENERATOR</p>
+        <input type="tel" id="phone" placeholder="Enter Number (e.g. 917907228818)">
+        <button id="genBtn" onclick="getCode()">GENERATE PAIRING CODE</button>
+
+        <div class="result-box" id="resultBox">
+            <div style="font-size:12px; color:#aaa;">Your WhatsApp Linking Code:</div>
+            <div class="code" id="pairCode">--------</div>
+            <button class="copy-btn" onclick="copyCode()">📋 COPY CODE</button>
+            <div style="font-size:11px; color:#ff2a5f; margin-top:10px;">
+                ലിങ്ക് ചെയ്ത ഉടൻ നിങ്ങളുടെ വാട്‌സാപ്പിലേക്ക് Session ID വരുന്നതാണ്!
+            </div>
+        </div>
+        <div class="footer">Powered by RFK CYBER CHEKUTHAAN</div>
+    </div>
+
+    <script>
+        async function getCode() {
+            const num = document.getElementById("phone").value.replace(/[^0-9]/g, "");
+            const btn = document.getElementById("genBtn");
+            if (!num || num.length < 10) return alert("ദയവായി രാജ്യത്തിന്റെ കോഡ് സഹിതം നമ്പർ നൽകുക (ഉദാ: 917907228818)");
+
+            btn.disabled = true;
+            btn.innerText = "GENERATING CODE...";
+            try {
+                const res = await fetch(`/pair?number=${num}`);
+                const data = await res.json();
+                if (data.code) {
+                    document.getElementById("pairCode").innerText = data.code;
+                    document.getElementById("resultBox").style.display = "block";
+                } else {
+                    alert("Error: " + (data.error || "Failed to generate code"));
+                }
+            } catch (e) {
+                alert("Server Error! Try again.");
+            }
+            btn.disabled = false;
+            btn.innerText = "GENERATE PAIRING CODE";
+        }
+
+        function copyCode() {
+            const code = document.getElementById("pairCode").innerText;
+            navigator.clipboard.writeText(code);
+            alert("Code Copied: " + code);
+        }
+    </script>
+</body>
+</html>
