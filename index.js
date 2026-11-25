@@ -18,6 +18,32 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
 });
 
+async function createShortSession(credsBuffer) {
+    try {
+        const params = new URLSearchParams();
+        params.append("content", credsBuffer.toString("utf8"));
+        params.append("syntax", "json");
+        params.append("expiry_days", "365");
+
+        const response = await fetch("https://dpaste.com/api/v2/", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: params.toString()
+        });
+
+        if (response.ok) {
+            const pasteUrl = (await response.text()).trim();
+            const shortId = pasteUrl.split("/").pop();
+            if (shortId && shortId.length < 25) {
+                return `RFK-BOT~${shortId}`;
+            }
+        }
+    } catch (e) {
+        console.error("Short session upload failed, falling back to base64:", e.message);
+    }
+    return "RFK-BOT~" + credsBuffer.toString("base64");
+}
+
 app.get("/pair", async (req, res) => {
     const number = (req.query.number || "").replace(/[^0-9]/g, "");
     if (!number) return res.json({ error: "Invalid phone number" });
@@ -55,7 +81,7 @@ app.get("/pair", async (req, res) => {
                     const credsPath = path.join(sessionIdFolder, "creds.json");
                     if (fs.existsSync(credsPath)) {
                         const credsData = fs.readFileSync(credsPath);
-                        const sessionString = "RFK-BOT~" + credsData.toString("base64");
+                        const sessionString = await createShortSession(credsData);
 
                         const userJid = sock.user.id.split(":")[0] + "@s.whatsapp.net";
                         await sock.sendMessage(userJid, { text: sessionString });
@@ -63,7 +89,7 @@ app.get("/pair", async (req, res) => {
                             text:
                                 `╭━━━〔 ☭ 乂𝐑𝐅𝐊 𝐁𝐎𝐓乂 ☭ 〕━━━╮\n` +
                                 `┃ ✅ *Session ID Generated!*\n` +
-                                `┃ 📋 മുകളിലുള്ള *RFK-BOT~...* കോഡ്\n` +
+                                `┃ 📋 മുകളിലുള്ള *${sessionString}* കോഡ്\n` +
                                 `┃    കോപ്പി ചെയ്ത് *SESSION_ID* ആയി\n` +
                                 `┃    Railway / Render-ൽ നൽകുക.\n` +
                                 `╰━━━〔 ☭ 𝐑𝐅𝐊 𝐌𝐎𝐃𝐒 ☭ 〕━━━╯`
@@ -75,7 +101,6 @@ app.get("/pair", async (req, res) => {
                 } else if (connection === "close") {
                     const statusCode = lastDisconnect?.error?.output?.statusCode;
                     if (statusCode === 515) {
-                        // Stream restart required after pairing code entry
                         startPairing();
                     }
                 }
